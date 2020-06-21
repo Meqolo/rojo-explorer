@@ -6,6 +6,7 @@ const fs = require('fs');
 const classIcons = JSON.parse(fs.readFileSync(__dirname + '/assets/classes.json', 'utf-8'))
 
 let Instances = {}
+let RojoInstances = {}
 
 // this method is called when your extension is activated
 // your extension is activated the very first time the command is executed
@@ -86,10 +87,12 @@ function activate(context) {
 					url = result
 					Axios.get(url + "api/rojo").then( response => {
 						let data = response.data
+						RojoInstances = data
 						Axios.get(`${url}api/read/${data.rootInstanceId}`).then(response => {
 							Instances = {
 								label: response.data.instances[data.rootInstanceId].Name,
 								icon: '025',
+								id: data.rootInstanceId,
 								children : [
 
 								]
@@ -102,6 +105,7 @@ function activate(context) {
 									let b = treething.push({
 										label: obj.Name,
 										icon: String(classIcons[obj.ClassName] - 1).padStart(3, '0'),
+										id: obj.Id,
 										children: []
 									})
 									if (obj.ClassName == "Workspace") {
@@ -114,19 +118,44 @@ function activate(context) {
 							}
 
 							GetInstances(response.data.instances[data.rootInstanceId], Instances.children)
-							
-
-
-							// let TDP = new TreeDataProvider()
-						
-
-							// async () => {
-								// vscode.window.registerTreeDataProvider("RojoExplorer",
-								// new TreeDataP([dataObject]))
-							// }
 
 							vscode.window.createTreeView("RojoExplorer", { 
 								treeDataProvider: new TreeDataP([Instances])
+							})
+
+							const completionProvider = vscode.languages.registerCompletionItemProvider('lua', {
+								provideCompletionItems(document, position, token, context) {
+									const textSplit = document.lineAt(position.line).text.substr(0, position.character).split(/[^\w\.]+/)
+									const text = textSplit[textSplit.length - 1]
+									
+									console.log(Instances)
+
+									let CompletionItems = [
+										
+									]
+
+									const gameCompletion = new vscode.CompletionItem('game');
+									gameCompletion.documentation = "The 'game' DataModel is the root of Roblox's parent-child hierarchy"
+
+									CompletionItems.push(gameCompletion)
+
+									if (text.startsWith('game')) {
+
+									}
+
+
+									// console.log(document, position, context)
+
+									
+									
+
+									const localCompletion = new vscode.CompletionItem('local');
+						
+				
+						
+									// return all completion items as array
+									return CompletionItems
+								}
 							})
 						}).catch(err => {
 							console.error(err)
