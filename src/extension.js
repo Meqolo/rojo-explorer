@@ -7,6 +7,7 @@ const classIcons = JSON.parse(fs.readFileSync(__dirname + '/assets/classes.json'
 
 let Instances = {}
 let RojoInstances = {}
+let url = ''
 
 // this method is called when your extension is activated
 // your extension is activated the very first time the command is executed
@@ -38,6 +39,13 @@ class TreeDataP {
 	);
 	TreeItem.iconPath = `${__dirname}/assets/classes/tile${item.icon}.png`
 
+	switch (RojoInstances[item.id].ClassName) {
+		case "Script":
+		case "LocalScript":
+		case "ModuleScript":
+		TreeItem.command = {command: 'rojo-explorer.openFile', title: 'Opens File', arguments: [item.id]}
+	}
+
     return TreeItem
   }
 
@@ -61,12 +69,9 @@ function activate(context) {
 	// This line of code will only be executed once when your extension is activated
 	console.log('Congratulations, your extension "rojo-explorer" is now active!');
 
-	// The command has been defined in the package.json file
-	// Now provide the implementation of the command with  registerCommand
-	// The commandId parameter must match the command field in package.json
+	
 	let disposable = vscode.commands.registerCommand('rojo-explorer.open', function () {
 		// The code you place here will be executed every time your command is executed
-		let url = ''
 		let TreeData = []
 
 		function Start() {
@@ -87,7 +92,7 @@ function activate(context) {
 					url = result
 					Axios.get(url + "api/rojo").then( response => {
 						let data = response.data
-						RojoInstances = data
+						
 						Axios.get(`${url}api/read/${data.rootInstanceId}`).then(response => {
 							Instances = {
 								label: response.data.instances[data.rootInstanceId].Name,
@@ -98,10 +103,11 @@ function activate(context) {
 								]
 							}
 
+							RojoInstances = response.data.instances
+
 							function GetInstances(parent, treething) {
 								for (let key in parent.Children) {
 									let obj = response.data.instances[parent.Children[key]]
-									console.log(key, obj)//response.data.instances[key])
 									let b = treething.push({
 										label: obj.Name,
 										icon: String(classIcons[obj.ClassName] - 1).padStart(3, '0'),
@@ -125,35 +131,43 @@ function activate(context) {
 
 							const completionProvider = vscode.languages.registerCompletionItemProvider('lua', {
 								provideCompletionItems(document, position, token, context) {
-									const textSplit = document.lineAt(position.line).text.substr(0, position.character).split(/[^\w\.]+/)
+									const textSplit = document.lineAt(position.line).text.substr(0, position.character).split('.')
 									const text = textSplit[textSplit.length - 1]
 									
-									console.log(Instances)
-
-									let CompletionItems = [
-										
-									]
+									let CompletionItems = []
+									let Completed = []
 
 									const gameCompletion = new vscode.CompletionItem('game');
-									gameCompletion.documentation = "The 'game' DataModel is the root of Roblox's parent-child hierarchy"
 
-									CompletionItems.push(gameCompletion)
-
-									if (text.startsWith('game')) {
-
+									function GetChildFromParent(parent, treething) {
+										for (let key in parent) {
+											let obj = parent[key]
+											
+											for (let key2 in textSplit) {
+												if (Number(key2) > 0) {
+													if (parent[key].label == textSplit[key2]) {
+														GetChildFromParent(parent[key].children)
+													} else if (parent[key].label.toLowerCase().startsWith(text.toLowerCase())) {
+														if (Completed.includes(parent[key].label) == false) {
+															const Completion = new vscode.CompletionItem(parent[key].label);
+															CompletionItems.push(Completion)
+															Completed.push(parent[key].label)
+														}
+													}
+												}
+											}
+										}
+									}
+									
+									if (textSplit.length <= 1 && text.startsWith('g')) {
+										CompletionItems.push(gameCompletion)
+									} else if (textSplit.length > 1) {
+										GetChildFromParent(Instances.children)
 									}
 
-
 									// console.log(document, position, context)
+									// const localCompletion = new vscode.CompletionItem('local');
 
-									
-									
-
-									const localCompletion = new vscode.CompletionItem('local');
-						
-				
-						
-									// return all completion items as array
 									return CompletionItems
 								}
 							})
@@ -177,7 +191,18 @@ function activate(context) {
 		// vscode.window.showInformationMessage('Hello World from Rojo Explorer!');
 	});
 
+	let disposable2 = vscode.commands.registerCommand('rojo-explorer.openFile', function (id) {
+		Axios.post(`${url}api/open/${id}`).catch(err => {
+			vscode.window.showErrorMessage(`Rojo Explorer had an error while attempting to open item ${id}, refer to debug console for more information`)
+			console.log(err);
+			console.log(`RojoExplorer error, item info-`)
+			console.log(RojoInstances[id])
+
+		})
+	})
+
 	context.subscriptions.push(disposable);
+	context.subscriptions.push(disposable2);
 }
 exports.activate = activate;
 
