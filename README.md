@@ -33,4 +33,8 @@ To open a script that is shown in the Explorer, simply click it and it will open
 
 This extension has some known flaws that may impact workflow, these issues will be listed below:
 
-* 
+*Explorer and intellisense does not update when a Rojo-managed instance is changed*
+You can get around this by simply running the `Rojo: Open Explorer` command again. This is planned to be implemented in the future.
+
+*Events, properties and functions do not autofill*
+This is planned to be implemented in the future, however there will have to be significant changes in the code inorder to implement this.
