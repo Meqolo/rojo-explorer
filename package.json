@@ -1,5 +1,6 @@
 {
 	"name": "rojo-explorer",
+	"publisher": "Meqolo",
 	"displayName": "Rojo Explorer",
 	"description": "Adds an explorer to let you view all objects inside of rojo",
 	"version": "0.0.1",
