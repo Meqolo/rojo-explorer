@@ -108,7 +108,6 @@ function activate(context) {
 							function GetInstances(parent, treething) {
 								for (let key in parent.Children) {
 									let obj = response.data.instances[parent.Children[key]]
-
 									let data = {
 										label: obj.Name,
 										icon: String(classIcons[obj.ClassName] - 1).padStart(3, '0'),
@@ -117,7 +116,6 @@ function activate(context) {
 									}
 
 									let b;
-									
 									if (obj.ClassName == 'Workspace') {
 										treething.splice(0, 0, data);
 										b = 1;
