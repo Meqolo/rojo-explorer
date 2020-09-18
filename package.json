@@ -1,9 +1,10 @@
 {
 	"name": "rojo-explorer",
-	"publisher": "Meqolo",
-	"displayName": "Rojo Explorer",
+	"publisher": "Nullshort",
+	"displayName": "Rojo Explorer Fork",
 	"description": "Adds an explorer to let you view all objects inside of rojo",
-	"version": "0.0.1",
+	"repository": "https://github.com/nullshort/rojo-explorer/",
+	"version": "0.0.3",
 	"engines": {
 		"vscode": "^1.46.0"
 	},
@@ -23,10 +24,10 @@
 		],
 		"views": {
 			"explorer": [
-			  {
-				"id": "RojoExplorer",
-				"name": "Rojo Explorer"
-			  }
+				{
+					"id": "RojoExplorer",
+					"name": "Explorer"
+				}
 			]
 		}
 	},
