@@ -108,17 +108,21 @@ function activate(context) {
 							function GetInstances(parent, treething) {
 								for (let key in parent.Children) {
 									let obj = response.data.instances[parent.Children[key]]
-									let b = treething.push({
+									let data = {
 										label: obj.Name,
 										icon: String(classIcons[obj.ClassName] - 1).padStart(3, '0'),
 										id: obj.Id,
 										children: []
-									})
-									if (obj.ClassName == "Workspace") {
-										var a = treething[0];
-										treething[0] = treething[b - 1];
-										treething[b - 1] = a;
 									}
+
+									let b;
+									if (obj.ClassName == 'Workspace') {
+										treething.splice(0, 0, data);
+										b = 1;
+									} else {
+										b = treething.push(data)
+									}
+									
 									GetInstances(obj, treething[b - 1].children)
 								}
 							}
